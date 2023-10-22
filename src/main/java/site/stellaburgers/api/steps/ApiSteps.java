@@ -2,7 +2,6 @@ package site.stellaburgers.api.steps;
 
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.tuple.Pair;
 import site.stellaburgers.api.dto.LoginJson;
 import site.stellaburgers.api.dto.UserJson;
@@ -16,8 +15,6 @@ import static site.stellaburgers.api.utils.RequestType.POST;
 
 
 public class ApiSteps {
-
-
     @Step("Удалить пользователя")
     public static void sendDelete(String token) {
         sendRequest(StellaBurgersSpecification.delete(token), DELETE, USER);
@@ -47,5 +44,4 @@ public class ApiSteps {
                 .build();
         return Pair.of(takeToken(response), loginJson);
     }
-
 }
