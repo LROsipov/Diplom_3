@@ -3,16 +3,19 @@ package site.stellaburgers.ui.pages;
 import com.codeborne.selenide.As;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import lombok.Getter;
 
 import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
+@Getter
 public class LoginPage {
     @As("Поле [Email]")
-    private final SelenideElement emailField = $x("//label[text()='Email']/..//input[@type='text']");
+    private final SelenideElement emailField = $("input[type='text']");
     @As("Поле [Пароль]")
-    private final SelenideElement passwordField = $x("//label[text()='Пароль']/..//input[@type='password']");
+    private final SelenideElement passwordField = $("input[type='password']");
     @As("Кнопка [Войти]")
     private final SelenideElement loginButton = $x("//button[text()='Войти']");
     @As("Кнопка  [Зарегестрироваться]")
@@ -20,38 +23,36 @@ public class LoginPage {
     @As("Кнопка  [Восстановить пароль]")
     private final SelenideElement forgotPasswordButton = $x("//a[text()='Восстановить пароль']");
 
-    @Step("Заполняем поле [Email]")
-    public final LoginPage fillEmailField(String email) {
-        emailField.shouldBe(visible).setValue(email);
-        return this;
+    public LoginPage() {
+        emailField.shouldBe(visible);
+        passwordField.shouldBe(visible);
+        loginButton.shouldBe(visible);
+        registerButton.shouldBe(visible);
+        forgotPasswordButton.shouldBe(visible);
     }
 
-    @Step("Заполняем поле [Пароль]")
-    public final LoginPage fillPasswordField(String password) {
-        passwordField.shouldBe(visible).setValue(password);
-        return this;
-    }
-
-    @Step("Заполняем форму авторизации")
+    @Step("Заполнить форму авторизации")
     public final LoginPage fillLoginFields(String email, String password) {
         emailField.shouldBe(visible).setValue(email);
         passwordField.shouldBe(visible).setValue(password);
         return this;
     }
 
-    @Step("Кликаем по кнопке [Войти]")
-    public final void clickLoginButton() {
+    @Step("Нажать по кнопке [Войти]")
+    public final MainPage clickLoginButton() {
         loginButton.shouldBe(enabled).click();
+        return new MainPage();
     }
 
-    @Step("Кликаем по кнопке [Зарегестрироваться]")
-    public final void clickRegisterButton() {
+    @Step("Нажать по кнопке [Зарегестрироваться]")
+    public final RegisterPage clickRegisterButton() {
         registerButton.shouldBe(enabled).click();
+        return new RegisterPage();
     }
 
-    @Step("Кликаем по кнопке [Восстановить пароль]")
-    public final void clickForgotPasswordButton() {
+    @Step("Нажать по кнопке [Восстановить пароль]")
+    public final ForgotPasswordPage clickForgotPasswordButton() {
         forgotPasswordButton.shouldBe(enabled).click();
+        return new ForgotPasswordPage();
     }
-
 }

@@ -6,43 +6,39 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import site.stellaburgers.api.dto.LoginJson;
-import site.stellaburgers.api.steps.ApiSteps;
 import site.stellaburgers.ui.pages.MainPage;
 import site.stellaburgers.ui.pages.ProfilePage;
 
 import static com.codeborne.selenide.Selenide.webdriver;
 import static com.codeborne.selenide.WebDriverConditions.url;
 import static io.qameta.allure.Allure.step;
+import static site.stellaburgers.utils.DataStringConstants.LOGIN_URL;
 
-@DisplayName("Выход из аккаунта")
-public class LogoutTest extends BaseUiTest {
-    private final String LOGIN = "https://stellarburgers.nomoreparties.site/login";
-    private Pair<String, LoginJson> pair;
-    private LoginJson user;
-    private MainPage mainPage;
-    private ProfilePage profilePage;
+@DisplayName("Провеки модуля [Выход из аккаунта]")
+class LogoutTest extends BaseUiTest {
+    Pair<String, LoginJson> pair;
+    LoginJson user;
+    MainPage mainPage;
+    ProfilePage profilePage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        profilePage = new ProfilePage();
-        pair = generateLoginUser();
+    void getTestData() {
+        pair = apiSteps.generateLoginUser();
         user = pair.getRight();
+        mainPage = uiSteps.authorization(user.getEmail(), user.getPassword());
     }
 
     @Test
-    @DisplayName("Проверем выход по кнопке [Выйти] в личном кабинете.")
+    @DisplayName("Проверка выхода из аккаунта по кнопке [Выйти] в личном кабинете.")
     void loginToClickLoginButtonTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickPersonalAreaButton();
+        profilePage = mainPage.clickPersonalAreaButtonAfterAuthorization();
         profilePage.clickExitButton();
-        step("Проверяем, что находимся на странице входа",
-                () -> webdriver().shouldHave(url(LOGIN)));
+        step("Проверить, что открыта станица  авторизации",
+                () -> webdriver().shouldHave(url(LOGIN_URL)));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
-        ApiSteps.sendDelete(pair.getLeft());
+        apiSteps.sendDelete(pair.getLeft());
     }
 }

@@ -15,46 +15,42 @@ import static io.qameta.allure.Allure.step;
 
 @DisplayName("Переход из личного кабинета в [Коснтруктор]")
 public class TransitionFromTest extends BaseUiTest {
-    private Pair<String, LoginJson> pair;
-    private LoginJson user;
-    private MainPage mainPage;
-    private ProfilePage profilePage;
+    Pair<String, LoginJson> pair;
+    LoginJson user;
+    MainPage mainPage;
+    ProfilePage profilePage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        profilePage = new ProfilePage();
-        pair = generateLoginUser();
+    void getTestData() {
+        pair = apiSteps.generateLoginUser();
         user = pair.getRight();
+        mainPage = uiSteps.authorization(user.getEmail(), user.getPassword());
     }
 
     @Test
-    @DisplayName("Проверяем переход по клику на [Констурктор]")
+    @DisplayName("Проверка  перехода  по клику на [Констурктор]")
     void transitionFromConstructorButtonTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickPersonalAreaButton();
+        profilePage = mainPage.clickPersonalAreaButtonAfterAuthorization();
         step("Проверяем, что есть информация о нахождении в личном кабинете",
                 () -> profilePage.getPersonalInfo().shouldBe(visible));
         mainPage.clickConstructorButton();
         step("Проверяем, что есть информация о нахождении в разделе [Конструктор]",
-                () -> mainPage.getConstructorInfo().shouldBe(visible));
+        () -> mainPage.getAssembleBurger().shouldBe(visible));
     }
 
     @Test
     @DisplayName("Проверяем переход по клику на [Лого]")
     void transitionFromLogoTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickPersonalAreaButton();
-        step("Проверяем, что есть информация о нахождении в личном кабинете",
+        profilePage = mainPage.clickPersonalAreaButtonAfterAuthorization();
+        step("Проверяем, что есть инфорция о нахождении в личном кабинете",
                 () -> profilePage.getPersonalInfo().shouldBe(visible));
         mainPage.clickLogo();
         step("Проверяем, что есть информация о нахождении в разделе [Конструктор]",
-                () -> mainPage.getConstructorInfo().shouldBe(visible));
+                () ->mainPage.getAssembleBurger().shouldBe(visible));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
         ApiSteps.sendDelete(pair.getLeft());
     }
 }

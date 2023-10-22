@@ -11,6 +11,8 @@ import site.stellaburgers.api.dto.UserJson;
 
 import java.util.Arrays;
 
+import static site.stellaburgers.utils.DataStringConstants.URL;
+
 public class StellaBurgersSpecification {
     public static RequestSpecification forStellaBurgers(UserJson userJson) {
         return createDefaultSpec().setBody(userJson).build();
@@ -20,14 +22,18 @@ public class StellaBurgersSpecification {
         return createDefaultSpec().addHeader("Authorization", accessToken).build();
     }
 
-    public static RequestSpecification forLogin(LoginJson loginJson) {
-        return createDefaultSpec().setBody(loginJson).build();
+    public static RequestSpecification forLogin(UserJson userJson) {
+        LoginJson body = LoginJson.builder()
+                .email(userJson.getEmail())
+                .password(userJson.getPassword())
+                .build();
+        return createDefaultSpec().setBody(body).build();
     }
 
 
     private static RequestSpecBuilder createDefaultSpec() {
         return new RequestSpecBuilder()
-                .setBaseUri("https://stellarburgers.nomoreparties.site")
+                .setBaseUri(URL)
                 .setBasePath("/api/")
                 .setContentType(ContentType.JSON)
                 .addFilters(Arrays.asList(new RequestLoggingFilter(), new ResponseLoggingFilter(), new AllureRestAssured()));

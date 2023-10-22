@@ -1,5 +1,6 @@
 package site.stellaburgers.test;
 
+import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,65 +15,59 @@ import site.stellaburgers.ui.pages.RegisterPage;
 
 import static com.codeborne.selenide.Condition.visible;
 import static io.qameta.allure.Allure.step;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static site.stellaburgers.api.factory.RandomUser.getRandomUser;
+import static site.stellaburgers.api.factory.RandomUserData.getRandomUser;
 import static site.stellaburgers.api.steps.ApiSteps.sendUserLogin;
 
-@DisplayName("Регистрация")
-public class RegisterTest extends BaseUiTest {
+@DisplayName("Проверки модуля [Регистрация]")
+class RegisterTest extends BaseUiTest {
 
     UserJson user;
-    private MainPage mainPage;
-    private LoginPage loginPage;
-    private RegisterPage registerPage;
-    private ProfilePage profilePage;
+    MainPage mainPage;
+    LoginPage loginPage;
+    RegisterPage registerPage;
+    ProfilePage profilePage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        registerPage = new RegisterPage();
-        loginPage = new LoginPage();
-        profilePage = new ProfilePage();
+    void getTestData() {
         user = getRandomUser();
+        mainPage = MainPage.open();
     }
 
     @Test
-    @DisplayName("Успешная регистрация")
+    @DisplayName("Провекра успешной регистрации")
     void successRegisterTest() {
-        mainPage.clickLoginButton();
-        loginPage.clickRegisterButton();
-        registerPage.fillNameField(user.getName())
+        registerPage = mainPage.clickLoginButton()
+                .clickRegisterButton();
+        loginPage = registerPage.fillNameField(user.getName())
                 .fillEmailField(user.getEmail())
                 .fillPasswordField(user.getPassword())
                 .clickRegisterButton();
-        loginPage.fillLoginFields(user.getEmail(), user.getPassword())
-                .clickLoginButton();
-        mainPage.clickPersonalAreaButton();
-        step("Сравниваем значения поля [Имя] с данными при регистрации",
-                () -> assertEquals(profilePage.checkNameField(), user.getName()));
-        step("Сравниваем значения поля [Email] с данными при регистрации",
-                () -> assertEquals(profilePage.checkEmailField(), user.getEmail()));
+        profilePage = loginPage.fillLoginFields(user.getEmail(), user.getPassword())
+                .clickLoginButton()
+                .clickPersonalAreaButtonAfterAuthorization();
+        step("Проверяем, что  значения поля [Имя] соответсвует данными при регистрации",
+                () -> profilePage.getNameField().shouldHave(Condition.value(user.getName())));
+        step("Проверяем, что  значения поля [Email] оответсвует данными при регистраци",
+                () -> profilePage.getLoginField().shouldHave(Condition.value(user.getEmail())));
     }
 
     @Test
-    @DisplayName("Невозможность регестрации с паролем меньше 6 символов")
+    @DisplayName("Проверка невозможности регестрации с паролем меньше 6 символов")
     void invalidRegisterTest() {
-        mainPage.clickLoginButton();
-        loginPage.clickRegisterButton();
+        registerPage = mainPage.clickLoginButton().clickRegisterButton();
         registerPage.fillNameField(user.getName())
                 .fillEmailField(user.getEmail())
                 .fillPasswordField("12345")
-                .clickRegisterButton();
-        step("Проверяем появилось ли сообщение об ошибке",
-                () -> registerPage.getErrorMessagePassword().shouldBe(visible));
+                .clickRegisterButtonWithInvalidData();
+        step("Проверяем, что появилось сообщение об ошибке",
+                () -> registerPage.getErrorMessage().shouldBe(visible));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
-        String token = ApiSteps.takeToken(sendUserLogin(new LoginJson(user.getEmail(), user.getPassword())));
+        String token = apiSteps.takeToken(sendUserLogin(user));
         if (token != null) {
-            ApiSteps.sendDelete(token);
+            apiSteps.sendDelete(token);
         }
     }
 }

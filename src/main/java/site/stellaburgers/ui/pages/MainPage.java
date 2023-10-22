@@ -4,11 +4,14 @@ import com.codeborne.selenide.As;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import lombok.Getter;
 
 import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
+@Getter
 public class MainPage {
     public static final String URL = "https://stellarburgers.nomoreparties.site/";
     @As("Кнопка [Войти в аккаунт]")
@@ -26,71 +29,69 @@ public class MainPage {
     @As("Текст [Соберите бургер]")
     private final SelenideElement assembleBurger = $x("//h1[text()='Соберите бургер']");
     @As("Лого сайта")
-    private final SelenideElement logoSite = $x("//div[contains(@class, 'AppHeader_header')]");
+    private final SelenideElement logoSite = $("div[class*=logo]");
     @As("Активный элемент")
     private final SelenideElement activeElement = $x("//div[contains(@class, 'tab_tab_type_current')]/span[contains(@class, 'text_type_main-default')]");
 
-
     public MainPage() {
-        loginButton.shouldBe(visible);
         personalAreaButton.shouldBe(visible);
         constructorButton.shouldBe(visible);
         bunButton.shouldBe(visible);
         saucesButton.shouldBe(visible);
         stuffingButton.shouldBe(visible);
+        logoSite.shouldBe(visible);
     }
-    @Step("Открываем главную страницу сайта")
+
+    @Step("Открыть главную страницу сайта")
     public static MainPage open() {
         return Selenide.open(URL, MainPage.class);
     }
 
-    @Step("Кликаем по кнопке [Войти в аккаунт]")
-    public final void clickLoginButton() {
+    @Step("Нажать по кнопке [Войти в аккаунт]")
+    public final LoginPage clickLoginButton() {
         loginButton.shouldBe(enabled).click();
+        return new LoginPage();
     }
 
-    @Step("Кликаем по кнопке [Личный кабинет]")
-    public final void clickPersonalAreaButton() {
+    @Step("Нажать по кнопке [Личный кабинет] авторизированного пользователя")
+    public final ProfilePage clickPersonalAreaButtonAfterAuthorization() {
         personalAreaButton.shouldBe(enabled).click();
+        return new ProfilePage();
     }
 
-    @Step("Кликаем по кнопке [Конструктор]")
+    @Step("Нажать по кнопке [Личный кабинет]  не авторизированного пользователя")
+    public final LoginPage clickPersonalAreaButtonBeforeAuthorization() {
+        personalAreaButton.shouldBe(enabled).click();
+        return new LoginPage();
+    }
+
+    @Step("Нажать по кнопке [Конструктор]")
     public final MainPage clickConstructorButton() {
         constructorButton.shouldBe(enabled).click();
         return this;
     }
 
-    @Step("Кликаем по кнопке [Булки]")
+    @Step("Нажать по кнопке [Булки]")
     public final MainPage clickBunButton() {
         bunButton.shouldBe(enabled).click();
         return this;
     }
 
-    @Step("Кликаем по кнопке [Соусы]")
+    @Step("Нажать по кнопке [Соусы]")
     public final MainPage clickSaucesButton() {
         saucesButton.shouldBe(enabled).click();
         return this;
     }
 
-    @Step("Кликаем по кнопке [Начинки]")
+    @Step("Нажать по кнопке [Начинки]")
     public final MainPage clickStuffingButton() {
         stuffingButton.shouldBe(enabled).click();
         return this;
     }
 
-    @Step("Кликаем по лого сайта")
+    @Step("Нажать по лого сайта")
     public final MainPage clickLogo() {
         logoSite.shouldBe(visible).click();
         return this;
     }
-
-    public SelenideElement getConstructorInfo() {
-        return assembleBurger;
-    }
-
-    public SelenideElement getActiveElementInfo() {
-        return activeElement;
-    }
-
-
 }

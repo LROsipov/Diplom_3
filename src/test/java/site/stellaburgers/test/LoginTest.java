@@ -6,82 +6,76 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import site.stellaburgers.api.dto.LoginJson;
-import site.stellaburgers.api.steps.ApiSteps;
 import site.stellaburgers.ui.pages.*;
 
+import static com.codeborne.selenide.Condition.*;
 import static io.qameta.allure.Allure.step;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DisplayName("Вход")
-public class LoginTest extends BaseUiTest {
-    private Pair<String, LoginJson> pair;
-    private LoginJson user;
-    private MainPage mainPage;
-    private LoginPage loginPage;
-    private RegisterPage registerPage;
-    private ProfilePage profilePage;
-    private ForgotPasswordPage forgotPasswordPage;
+@DisplayName("Проверки модуля [Вход]")
+class LoginTest extends BaseUiTest {
+    Pair<String, LoginJson> pair;
+    LoginJson user;
+    MainPage mainPage;
+    LoginPage loginPage;
+    ProfilePage profilePage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        registerPage = new RegisterPage();
-        loginPage = new LoginPage();
-        profilePage = new ProfilePage();
-        pair = generateLoginUser();
+    void getTestData() {
+        pair = apiSteps.generateLoginUser();
         user = pair.getRight();
-        forgotPasswordPage = new ForgotPasswordPage();
+        mainPage = MainPage.open();
     }
 
     @Test
-    @DisplayName("Вход по кнопке [Войти в аккаунт] на главной")
+    @DisplayName("Проверка входа по кнопке [Войти в аккаунт] на главной")
     void loginToClickLoginButtonTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickPersonalAreaButton();
-        step("Сравниваем значения поля [Email] с данными при регистрации",
-                () -> assertEquals(profilePage.checkEmailField(), user.getEmail()));
+        profilePage = mainPage.clickLoginButton()
+                .fillLoginFields(pair.getRight().getEmail(), pair.getRight().getPassword())
+                .clickLoginButton()
+                .clickPersonalAreaButtonAfterAuthorization();
+        step("Проверить, что  открыта страница с данными пользователя",
+                () ->profilePage.getPersonalInfo().shouldBe(visible));
     }
 
     @Test
-    @DisplayName("Вход через кнопку [Личный кабинет]")
+    @DisplayName("Проверка входа через кнопку [Личный кабинет]")
     void loginToClickPersonalAreaButtonTest() {
-        mainPage.clickPersonalAreaButton();
-        loginPage.fillLoginFields(user.getEmail(), user.getPassword())
-                .clickLoginButton();
-        mainPage.clickPersonalAreaButton();
-        step("Сравниваем значения поля [Email] с данными при регистрации",
-                () -> assertEquals(profilePage.checkEmailField(), user.getEmail()));
+        loginPage = mainPage.clickPersonalAreaButtonBeforeAuthorization();
+        profilePage = loginPage.fillLoginFields(pair.getRight().getEmail(), pair.getRight().getPassword())
+                .clickLoginButton()
+                .clickPersonalAreaButtonAfterAuthorization();
+        step("Проверить, что  открыта страница с данными пользователя",
+                () ->profilePage.getPersonalInfo().shouldBe(visible));
     }
 
     @Test
-    @DisplayName("Вход через кнопку в форме регистрации")
+    @DisplayName("Проверка входа через кнопку [Войти] в форме регистрации")
     void loginToLoginButtonInRegisterTest() {
-        mainPage.clickPersonalAreaButton();
-        loginPage.clickRegisterButton();
-        registerPage.clickLoginButton();
-        loginPage.fillLoginFields(user.getEmail(), user.getPassword())
-                .clickLoginButton();
-        mainPage.clickPersonalAreaButton();
-        step("Сравниваем значения поля [Email] с данными при регистрации",
-                () -> assertEquals(profilePage.checkEmailField(), user.getEmail()));
+        loginPage = mainPage.clickPersonalAreaButtonBeforeAuthorization();
+        RegisterPage registerPage = loginPage.clickRegisterButton();
+        profilePage = registerPage.clickLoginButton()
+                .fillLoginFields(pair.getRight().getEmail(), pair.getRight().getPassword())
+                .clickLoginButton()
+                .clickPersonalAreaButtonAfterAuthorization();
+        step("Проверить, что  открыта страница с данными пользователя",
+                () ->profilePage.getPersonalInfo().shouldBe(visible));
     }
 
     @Test
-    @DisplayName("Вход через кнопку в форме восстановления пароля")
+    @DisplayName("Проверка входа через кнопку [Войти] в форме восстановления пароля")
     void loginToLoginButtonInForgotPasswordTest() {
-        mainPage.clickPersonalAreaButton();
-        loginPage.clickForgotPasswordButton();
-        forgotPasswordPage.clickLoginButton();
-        loginPage.fillLoginFields(user.getEmail(), user.getPassword())
-                .clickLoginButton();
-        mainPage.clickPersonalAreaButton();
-        step("Сравниваем значения поля [Email] с данными при регистрации",
-                () -> assertEquals(profilePage.checkEmailField(), user.getEmail()));
+        loginPage = mainPage.clickPersonalAreaButtonBeforeAuthorization();
+        ForgotPasswordPage forgotPasswordPage =  loginPage.clickForgotPasswordButton();
+        profilePage = forgotPasswordPage.clickLoginButton()
+                .fillLoginFields(user.getEmail(), user.getPassword())
+                .clickLoginButton()
+                .clickPersonalAreaButtonAfterAuthorization();
+        step("Проверить, что  открыта страница с данными пользователя",
+                () ->profilePage.getPersonalInfo().shouldBe(visible));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
-        ApiSteps.sendDelete(pair.getLeft());
+        apiSteps.sendDelete(pair.getLeft());
     }
 }

@@ -6,56 +6,41 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import site.stellaburgers.api.dto.LoginJson;
-import site.stellaburgers.api.steps.ApiSteps;
 import site.stellaburgers.ui.pages.MainPage;
 
 import static com.codeborne.selenide.Condition.text;
 import static io.qameta.allure.Allure.step;
+import static site.stellaburgers.utils.DataStringConstants.*;
 
-@DisplayName("Раздел [Конструктор]")
-public class ChapterConstructorTest extends BaseUiTest {
-    private Pair<String, LoginJson> pair;
-    private LoginJson user;
-    private MainPage mainPage;
+@DisplayName("Проврека модуля [Конструктор]")
+class ChapterConstructorTest extends BaseUiTest {
+    Pair<String, LoginJson> pair;
+    LoginJson user;
+    MainPage mainPage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        pair = generateLoginUser();
+    void getTestData() {
+        pair = apiSteps.generateLoginUser();
         user = pair.getRight();
+        mainPage = uiSteps.authorization(user.getEmail(), user.getPassword());
     }
 
     @Test
-    @DisplayName("Проверяем переход к разделу [Булки]")
+    @DisplayName("Проверка перехода по разделам констуктора")
     void jumpToSectionBunTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickSaucesButton()
-                .clickBunButton();
-        step("Проверяем, что есть информация о активном разделе",
-                () -> mainPage.getActiveElementInfo().shouldHave(text("Булки")));
-    }
-
-    @Test
-    @DisplayName("Проверяем переход к разделу [Соусы]")
-    void jumpToSectionSaucesTest() {
-        loginInSite(user.getEmail(), user.getPassword());
         mainPage.clickSaucesButton();
         step("Проверяем, что есть информация о активном разделе",
-                () -> mainPage.getActiveElementInfo().shouldHave(text("Соусы")));
-    }
-
-    @Test
-    @DisplayName("Проверяем переход к разделу [Начинки]")
-    void jumpToSectionStuffingTest() {
-        loginInSite(user.getEmail(), user.getPassword());
+                () -> mainPage.getActiveElement().shouldHave(text(SAUCES)));
+        mainPage.clickBunButton();
+        step("Проверяем, что есть информация о активном разделе",
+                () -> mainPage.getActiveElement().shouldHave(text(BUN)));
         mainPage.clickStuffingButton();
         step("Проверяем, что есть информация о активном разделе",
-                () -> mainPage.getActiveElementInfo().shouldHave(text("Начинки")));
+                () -> mainPage.getActiveElement().shouldHave(text(STUFFING)));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
-        ApiSteps.sendDelete(pair.getLeft());
+        apiSteps.sendDelete(pair.getLeft());
     }
 }

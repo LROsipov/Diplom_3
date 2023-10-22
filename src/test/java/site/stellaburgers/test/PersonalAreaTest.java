@@ -13,35 +13,32 @@ import site.stellaburgers.ui.pages.ProfilePage;
 import static com.codeborne.selenide.Condition.visible;
 import static io.qameta.allure.Allure.step;
 
-@DisplayName("Переход в личный кабинет")
-public class PersonalAreaTest extends BaseUiTest {
-    private Pair<String, LoginJson> pair;
-    private LoginJson user;
-    private MainPage mainPage;
-    private ProfilePage profilePage;
+@DisplayName("Проверки модуля [Личный кабинет]")
+class PersonalAreaTest extends BaseUiTest {
+    Pair<String, LoginJson> pair;
+     LoginJson user;
+    MainPage mainPage;
+    ProfilePage profilePage;
 
     @BeforeEach
-    void arrangeTestData() {
-        mainPage = MainPage.open();
-        profilePage = new ProfilePage();
-        pair = generateLoginUser();
+    void getTestData() {
+        pair = apiSteps.generateLoginUser();
         user = pair.getRight();
+        mainPage = uiSteps.authorization(user.getEmail(), user.getPassword());
     }
 
     @Test
-    @DisplayName("Проверяем переход по клику на [Личный кабинет]")
+    @DisplayName("Проверка перехода по клику на [Личный кабинет]")
     void loginToClickLoginButtonTest() {
-        loginInSite(user.getEmail(), user.getPassword());
-        mainPage.clickPersonalAreaButton();
-        step("Проверяем, что есть кнопка [Профиль]",
+        profilePage = mainPage.clickPersonalAreaButtonAfterAuthorization();
+        step("Проверить, что есть кнопка [Профиль]",
                 () -> profilePage.getProfileButton().shouldBe(visible));
-        step("Проверяем, что есть информация о нахождении в личном кабинете",
+        step("Провить, что есть информация о нахождении в личном кабинете",
                 () -> profilePage.getPersonalInfo().shouldBe(visible));
     }
 
     @AfterEach
     public void finish() {
-        closeWindow();
         ApiSteps.sendDelete(pair.getLeft());
     }
 }
